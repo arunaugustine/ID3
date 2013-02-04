@@ -171,7 +171,7 @@ def print_tree(tree, str):
 			print "%s%s = %s" % (str, tree.keys()[0],item),
 			print " : "
 			print "|",
-			print_tree_2(tree.values()[0][item],str + "  ")
+			print_tree(tree.values()[0][item],str + "  ")
 	else:
 		print "%s : %s" % (str, tree)
 
@@ -180,8 +180,7 @@ if __name__ == "__main__":
 	fTrainIn = get_training_file()
 	fTestIn = get_test_file()
 	trainingTree, trainingClassification, testClassification, givenTrainClassification, givenTestClassification = run_app(fTrainIn,fTestIn)
-	#print_tree(trainingTree,"")
-	#print trainingClassification
+	print_tree(trainingTree,"")
 	print " Accuracy of training set (%s instances) : " % len(givenTrainClassification),
 	print accuracy(trainingClassification, givenTrainClassification)
 	print " Accuracy of test set (%s instances) : " % len(givenTestClassification),
