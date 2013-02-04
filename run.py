@@ -1,8 +1,26 @@
 import sys
+from dtree import *
 
 """ 
-This is the entry point of the application
+This is the entry point of the application. The main funtion that calls the 
+create decision tree algorithm is run_app. This in turn is called from main
+To run the example use python -u run.py train.dat test.dat
+
+Data Strucutre
+---------------
+
+The funtion: create_decision_tree(examples, attributes, target_attribute, heuristic_funtion)
+takes in the following input:
+
+examples (train or test data) : list of dicts 
+attributes : list
+target_attribute: string
+heuristic_funtion: funtion pointer to "gain" funtion
 """
+
+
+
+
 
 def get_training_file():
 	"""
@@ -91,7 +109,7 @@ def run_app(fTrainIn, fTestIn):
 	for line in linesInTest:
 		testData.append(dict(zip(attrList,[datum.strip() for datum in line.split("\t")])))
 
-	print testData
+	#print testData
 
 	linesInTrain = [lineTrain.strip() for lineTrain in fTrainIn.readlines()]
 	attributesTrain = linesInTrain[0].replace("\t"," ").split(" ")
@@ -112,16 +130,63 @@ def run_app(fTrainIn, fTestIn):
 	for lineTrain in linesInTrain:
 		trainData.append(dict(zip(attrListTrain,[datum.strip() for datum in lineTrain.split("\t")])))
 
-	print trainData	
+
+	trainingTree = create_decision_tree(trainData, attrListTrain, targetAttributeTrain, gain)
+	trainingClassification = classify(trainingTree, trainData)
+
+	testTree = create_decision_tree(testData, attrList, targetAttribute, gain)
+	testClassification = classify(testTree, testData)
+
+	# also returning the example classification in both the files
+	givenTestClassification = []
+	for row in testData:
+		givenTestClassification.append(row[targetAttribute])
+
+	givenTrainClassification = []
+	for row in trainData:
+		givenTrainClassification.append(row[targetAttributeTrain])
+
+	return trainingTree, trainingClassification, testClassification, givenTrainClassification, givenTestClassification
 
 
+def accuracy(algoclassification, targetClassification):
+	matching_count = 0.0
+
+	for alg, target in zip(algoclassification,targetClassification):
+		if alg == target:
+			matching_count += 1.0
+
+	#print len(algoclassification)
+	#print len(targetClassification)
+	return (matching_count / len(targetClassification)) * 100
+
+def print_tree(tree, str):
+	"""
+	Funtion to print the treee in the desired format
+	"""
+
+	if type(tree)== dict:
+		#print "%s%s = " % (str,tree.keys()[0]),
+		for item in tree.values()[0].keys():
+			print "%s%s = %s" % (str, tree.keys()[0],item),
+			print " : "
+			print "|",
+			print_tree_2(tree.values()[0][item],str + "  ")
+	else:
+		print "%s : %s" % (str, tree)
 
 if __name__ == "__main__":
 
 	fTrainIn = get_training_file()
 	fTestIn = get_test_file()
-	run_app(fTrainIn,fTestIn)
-	
+	trainingTree, trainingClassification, testClassification, givenTrainClassification, givenTestClassification = run_app(fTrainIn,fTestIn)
+	#print_tree(trainingTree,"")
+	#print trainingClassification
+	print " Accuracy of training set (%s instances) : " % len(givenTrainClassification),
+	print accuracy(trainingClassification, givenTrainClassification)
+	print " Accuracy of test set (%s instances) : " % len(givenTestClassification),
+	print accuracy(testClassification, givenTestClassification)
+
 
 
 
